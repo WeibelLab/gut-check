@@ -1,10 +1,13 @@
-
 var URL = window.URL || window.webkitURL
 
-var displayMessage = function (message, isError) {
-  var element = document.querySelector('#message')
-  element.innerHTML = message
-  element.className = isError ? 'error' : 'info'
+var videoPlayer = document.getElementById('player');
+
+function videoDefaultSize(){
+  videoPlayer.style.width = "50%";
+}
+
+function video2XSize(){
+  videoPlayer.style.width = "100%";
 }
 
 var playSelectedFile = function (event) {
@@ -13,9 +16,7 @@ var playSelectedFile = function (event) {
   var videoNode = document.querySelector('video')
   var canPlay = videoNode.canPlayType(type)
   if (canPlay === '') canPlay = 'no'
-  var message = 'Can play type "' + type + '": ' + canPlay
   var isError = canPlay === 'no'
-  // displayMessage(message, isError)
 
   if (isError) {
     return

@@ -9,6 +9,7 @@ var data_rows = [
 ];
 
 var video_player = document.querySelector("video");
+var affect_face_p = document.getElementById("affect_face");
 
 function checkVideo() {
     if(video_player.paused){
@@ -19,15 +20,61 @@ function checkVideo() {
     }
 }
 
-var onSliderSlide = function (slideEvt) {
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function showFace(val) {
+    if(val == 1){
+        affect_face_p.innerHTML = "&#128512;";
+        await sleep(1000);
+        affect_face_p.innerHTML = "";
+    }else if(val == -1){
+        affect_face_p.innerHTML = "&#128533;";
+        await sleep(1000);
+        affect_face_p.innerHTML = "";
+    }
+}
+
+function sliderOnKeypress(keyEvt) {
     var time = video_player.currentTime;
-    if(checkVideo()){
+    if(video_player.readyState != 4){
+        console.log("video NOT loaded");
+    }
+    else if(checkVideo()) {
+        data_rows.push([time, keyEvt]);
+        showFace(keyEvt);
+        console.log("pressed " + keyEvt + " at " + time);
+    }else{
+        console.log("video NOT playing");
+    }
+}
+
+function sliderOnSlide(slideEvt) {
+    var time = video_player.currentTime;
+    if(video_player.readyState != 4){
+        console.log("video NOT loaded");
+    }
+    else if(checkVideo()) {
         data_rows.push([time, slideEvt.value]);
         console.log("slider slid to " + slideEvt.value + " at " + time);
     }else{
         console.log("video NOT playing");
     }
 };
+
+function sliderOnChange(changeEvt) {
+    var time = video_player.currentTime;
+    if(video_player.readyState != 4){
+        console.log("video NOT loaded");
+    }
+    else if(checkVideo()){
+        data_rows.push([time, changeEvt.value]);
+        console.log("slider changed to " + changeEvt.value + " at " + time);
+    }else{
+        console.log("video NOT playing");
+    }
+}
 
 $("#slider").kendoSlider({
     increaseButtonTitle: "Right",
@@ -37,7 +84,8 @@ $("#slider").kendoSlider({
     value: 0,
     min: -3,
     max: 3,
-    slide: onSliderSlide
+    slide: sliderOnSlide,
+    change: sliderOnChange
 });
 
 function downloadCSV() {
@@ -49,4 +97,21 @@ function downloadCSV() {
     link.setAttribute("download", "video_slider_data.csv");
     document.body.appendChild(link); // Required for FF
     link.click();
+}
+
+document.onkeydown = checkKey;
+
+function checkKey(e) {
+
+    e = e || window.event;
+
+    if (e.keyCode == '38') {
+        // up arrow
+        sliderOnKeypress(1);
+    }
+    else if (e.keyCode == '40') {
+        // down arrow
+        sliderOnKeypress(-1);
+    }
+
 }

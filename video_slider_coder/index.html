@@ -5,10 +5,26 @@
     <link rel="stylesheet" href="http://cdn.kendostatic.com/2012.3.1114/styles/kendo.default.min.css" />
     <body>
         <h1>Local Video Player Slider Coder</h1>
-        <input id="selector" type="file" accept="video/*, audio/*"/>
-        <video id="player" controls width="50%"></video>
-        <input id="slider" />
-        <input type="button" value="Download CSV" onclick="downloadCSV()">
+        <p>To use: load video, play video, then slide slider or click on buttons. Can also use up/down arrow keys. When finished click "Download CSV"</p>
+        <div>
+            <button onclick="videoDefaultSize()">Default Video Size</button>
+            <button onclick="video2XSize()">2x Video Size</button>
+        </div>
+        <div>
+            <input id="selector" type="file" accept="video/*, audio/*"/>
+        </div>
+        <div>
+            <video id="player" controls width="50%"></video>
+        </div>
+        <div style="display: flex;">
+            <input id="slider" />
+            <div style="height: 100px;">
+                <p id="affect_face" style="margin: 0px; font-size:100px; display:inherit;"></p>
+            </div>
+        </div>
+        <div>
+            <input type="button" value="Download CSV" onclick="downloadCSV()">
+        </div>
     </body>
     <script src="local_video_player.js"></script>
     <script src="slider_recorder.js"></script>
