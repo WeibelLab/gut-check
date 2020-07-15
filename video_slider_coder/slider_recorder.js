@@ -156,6 +156,11 @@ async function showFace(val) {
         await sleep(1000);
         affect_face_p.innerHTML = "";
     }
+    else if(val == 0){
+        affect_face_p.innerHTML = "&#128528;";
+        await sleep(1000);
+        affect_face_p.innerHTML = "";
+    }
 }
 
 function sliderOnKeypress(keyEvt) {
@@ -206,6 +211,10 @@ function checkKey(e) {
     else if (e.keyCode == '40') {
         // down arrow
         sliderOnKeypress(-1);
+    }
+    else if (e.keyCode == '39') {
+        // right arrow
+        sliderOnKeypress(0);
     }
 
 }

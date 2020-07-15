@@ -6,6 +6,11 @@ input {
     width: 100%;       
 }
 
+.faces {
+    padding: 10px 30px;
+    font-size: 30px;
+}
+
 .info {
     background-color: aqua;            
 }
