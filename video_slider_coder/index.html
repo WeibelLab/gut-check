@@ -5,32 +5,32 @@
     <link rel="stylesheet" href="http://cdn.kendostatic.com/2012.3.1114/styles/kendo.default.min.css" />
     <link rel="stylesheet" href="style.css" />
     <body>
-        <h1>Local Video Player Slider Coder</h1>
-        <p>To use: load video, play video, and push up/down arrow keys to create annotations. When finished click "Download CSV"</p>
+        <h1>Video Player Coder</h1>
+        <p>To use: load video, play video, and push up/down/right arrow keys to create annotations. When finished click "Download CSV"</p>
         <!-- <div>
             <button onclick="videoDefaultSize()">Default Video Size</button>
             <button onclick="video2XSize()">2x Video Size</button>
         </div> -->
-        <div style="padding: 10px;">
+        <div style="margin-bottom: 5px;">
             <input id="selector" type="file" accept="video/*, audio/*"/>
         </div>
-        <div style="height: 500px;">
+        <div>
             <div style="float: left; width: 50%">
                 <video id="player" controls width="100%"></video>
                 <div style="padding: 10px; height: 200px;">
-                    <div style="float: left; width: 50%; height: 100px;">
-                        <input type="button" value="Download CSV" onclick="downloadCSV()">
+                    <div id="global_affect_import" style="float: left; width: 100%;">
+                        <!-- import global_affect_form here -->
                     </div>
-                    <div style="height: 100px;">
-                        <p id="affect_face" style="margin: 0px; font-size:100px"></p>
+                    <div style="float: left; width: 100%; margin: 20px 0px;">
+                        <input type="button" value="Download CSV" onclick="downloadData()">
                     </div>
                 </div>
             </div>
             <div style="float: left; width: 50%;">
-                <button class="faces" style="margin-left: 10px;" onclick="sliderOnKeypress(-1)">&#128543;</button>
-                <button class="faces" onclick="sliderOnKeypress(0)">&#128528;</button>
-                <button class="faces" onclick="sliderOnKeypress(1)">&#128522;</button>
-                <div style="width: 450px; max-height: 50vh; overflow-y: scroll">
+                <button class="faces" id="negativeButton" style="margin-left: 10px;" onclick="sliderOnKeypress(-1)">&#128543;</button>
+                <button class="faces" id="neutralButton" onclick="sliderOnKeypress(0)">&#128528;</button>
+                <button class="faces" id="positiveButton" onclick="sliderOnKeypress(1)">&#128522;</button>
+                <div id="data-table-div">
                     <table id="data-table"></table>
                 </div>
             </div>
@@ -38,5 +38,6 @@
     </body>
     <script src="local_video_player.js"></script>
     <script src="slider_recorder.js"></script>
+    <script src="global_affect_form.js"></script>
 
 </html>

@@ -12,10 +12,18 @@ $("#data-table").on('click', '.btnDelete', function () {
     removeData(id);
 });
 
+$("#data-table").on('click', '.timeVal', function () {
+    var currentRow = $(this).closest("tr");
+    var time = currentRow.find("td:eq(1)").text();
+    removeData(id);
+});
+
 var dynamicTable = (function() {    
     var _tableId, _table, 
         _fields, _headers, 
         _defaultText;
+
+    var dt_div = document.getElementById("data-table-div");
 
     /** Builds the row with columns from the specified names. 
      *  If the item parameter is specified, the memebers of the names array will be used as property names of the item; otherwise they will be directly parsed as text.
@@ -85,7 +93,7 @@ var dynamicTable = (function() {
             return this;
         },
         /** Loads the specified data to the table body. */
-        load: function(data, append) {
+        load: function(data, append, scroll) {
             if (_table.length < 1) return; //not configured.
             _setHeaders();
             _removeNoItemsInfo();
@@ -96,6 +104,9 @@ var dynamicTable = (function() {
                 });
                 var mthd = append ? 'append' : 'html';
                 _table.children('tbody')[mthd](rows);
+                if (scroll) {
+                    dt_div.scrollTop = dt_div.scrollHeight; // auto scroll to bottom
+                }
             }
             else {
                 _setNoItemsInfo();
@@ -127,11 +138,10 @@ function reindex(arr) {
 function removeData(i) {
     data.splice(i, 1);
     reindex(data);
-    dt.load(data);
+    dt.load(data, false, false);
 }
 
 var video_player = document.querySelector("video");
-var affect_face_p = document.getElementById("affect_face");
 
 function checkVideo() {
     if(video_player.paused){
@@ -146,20 +156,24 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+var negativeButton = document.getElementById("negativeButton");
+var neutralButton = document.getElementById("neutralButton");
+var positiveButton = document.getElementById("positiveButton");
+
 async function showFace(val) {
-    if(val == 1){
-        affect_face_p.innerHTML = "&#128522;";
-        await sleep(1000);
-        affect_face_p.innerHTML = "";
-    }else if(val == -1){
-        affect_face_p.innerHTML = "&#128543;";
-        await sleep(1000);
-        affect_face_p.innerHTML = "";
+    if(val == -1){
+        negativeButton.classList.add("selected");
+        await sleep(300);
+        negativeButton.classList.remove("selected");
+    }else if(val == 0){
+        neutralButton.classList.add("selected");
+        await sleep(300);
+        neutralButton.classList.remove("selected");
     }
-    else if(val == 0){
-        affect_face_p.innerHTML = "&#128528;";
-        await sleep(1000);
-        affect_face_p.innerHTML = "";
+    else if(val == 1){
+        positiveButton.classList.add("selected");
+        await sleep(300);
+        positiveButton.classList.remove("selected");
     }
 }
 
@@ -172,7 +186,7 @@ function sliderOnKeypress(keyEvt) {
     else if(checkVideo()) {
         var in_data = {id: data.length, time_sec: time_sec, time_hms: time_hms, value: keyEvt};
         data.push(in_data);
-        dt.load([in_data], true);
+        dt.load([in_data], true, true);
         showFace(keyEvt);
         console.log("pressed " + keyEvt + " at " + time_hms);
     }else{
@@ -180,8 +194,9 @@ function sliderOnKeypress(keyEvt) {
     }
 }
 
-function downloadCSV() {
+function downloadData() {
     let csvContent = "data:text/csv;charset=utf-8,";
+    csvContent += getGlobalAffectInput();
     csvContent += "id,time_sec,times_hms,value\n";
     for(var key in data) {
         var id = data[key].id;
@@ -193,7 +208,8 @@ function downloadCSV() {
     var encodedUri = encodeURI(csvContent);
     var link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "video_slider_data.csv");
+    var out_path = inputNode.value.split("\\").slice(-1)[0].split(".")[0];
+    link.setAttribute("download", out_path+".csv");
     document.body.appendChild(link); // Required for FF
     link.click();
 }
