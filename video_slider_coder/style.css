@@ -1,3 +1,7 @@
+body{
+    min-width:1160px;
+ }
+
 video, input {
     display: block;
 }
@@ -44,12 +48,11 @@ input {
     padding: 0px 0px 0px 10px;
     font-family: calibri, arial;
     font-size: small;
-    width: 320px;
+    width: 550px;
 }
 
 #data-table-div {
-    margin-top: 5px;
-    margin-right: 100px;
+    margin: 5px auto 0px 0px;
     max-height: 300px;
     overflow-y: scroll;
 }

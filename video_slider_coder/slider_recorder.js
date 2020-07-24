@@ -5,6 +5,7 @@ Object.defineProperty(HTMLMediaElement.prototype, 'playing', {
 })
 
 var data = [];
+var keyHeld = false;
 
 $("#data-table").on('click', '.btnDelete', function () {
     var currentRow = $(this).closest("tr");
@@ -12,10 +13,16 @@ $("#data-table").on('click', '.btnDelete', function () {
     removeData(id);
 });
 
-$("#data-table").on('click', '.timeVal', function () {
-    var currentRow = $(this).closest("tr");
-    var time = currentRow.find("td:eq(1)").text();
-    removeData(id);
+$("#data-table").on('click', '.timeSecVal', function () {
+    var currentCell = $(this).closest("td");
+    console.log("Scrubbing to", toHMS(currentCell.text()));
+    video_player.currentTime = currentCell.text();
+});
+
+$("#data-table").on('click', '.timeHmsVal', function () {
+    var currentCell = $(this).closest("td");
+    console.log("Scrubbing to", currentCell.text());
+    video_player.currentTime = toSeconds(currentCell.text());
 });
 
 var dynamicTable = (function() {    
@@ -47,7 +54,15 @@ var dynamicTable = (function() {
         {
             $.each(names, function(index, name) {
                 var c = item ? item[name+''] : name;
-                row += '<td>' + c + '</td>';
+                if(name == "time_sec_start" | name == "time_sec_end"){
+                    row += '<td class="timeSecVal">' + c + '</td>';
+                }
+                else if(name == "time_hms_start" | name == "time_hms_end"){
+                    row += '<td class="timeHmsVal">' + c + '</td>';
+                }
+                else{
+                    row += '<td>' + c + '</td>';
+                }                
             });
         }
         row += '<td><button class="btnDelete">Delete</button></td>';
@@ -125,7 +140,12 @@ function toHMS(sec) {
     return new Date(sec * 1000.0).toISOString().substr(11, 11);
 }
 
-var dt = dynamicTable.config('data-table', ['id', 'time_sec', 'time_hms', 'value'], null, 'Nothing yet...');
+function toSeconds(hms) {
+    var hms_split = hms.split(':');
+    return (+hms_split[0]) * 60 * 60 + (+hms_split[1]) * 60 + (+hms_split[2] || 0);
+}
+
+var dt = dynamicTable.config('data-table', ['id', 'time_sec_start', 'time_hms_start', 'time_sec_end', 'time_hms_end', 'value'], null, 'Nothing yet...');
 
 function reindex(arr) {
     idx = 0;
@@ -157,38 +177,62 @@ function sleep(ms) {
 }
 
 var negativeButton = document.getElementById("negativeButton");
-var neutralButton = document.getElementById("neutralButton");
+// var neutralButton = document.getElementById("neutralButton");
 var positiveButton = document.getElementById("positiveButton");
 
 async function showFace(val) {
     if(val == -1){
         negativeButton.classList.add("selected");
-        await sleep(300);
-        negativeButton.classList.remove("selected");
-    }else if(val == 0){
-        neutralButton.classList.add("selected");
-        await sleep(300);
-        neutralButton.classList.remove("selected");
     }
+    // else if(val == 0){
+    //     neutralButton.classList.add("selected");
+    // }
     else if(val == 1){
         positiveButton.classList.add("selected");
-        await sleep(300);
+    }
+}
+
+async function unshowFace(val) {
+    if(val == -1){
+        negativeButton.classList.remove("selected");
+    }
+    // else if(val == 0){
+    //     neutralButton.classList.remove("selected");
+    // }
+    else if(val == 1){
         positiveButton.classList.remove("selected");
     }
 }
 
-function sliderOnKeypress(keyEvt) {
-    var time_sec = video_player.currentTime;
-    var time_hms = toHMS(time_sec);
+function sliderOnKeydown(keyEvt) {
+    var time_sec_start = video_player.currentTime;
+    var time_hms_start = toHMS(time_sec_start);
     if(video_player.readyState != 4){
         console.log("video NOT loaded");
     }
     else if(checkVideo()) {
-        var in_data = {id: data.length, time_sec: time_sec, time_hms: time_hms, value: keyEvt};
+        in_data = {id: data.length, time_sec_start: time_sec_start, time_hms_start: time_hms_start, time_sec_end: null, time_hms_end: null, value: keyEvt};
+        showFace(keyEvt);
+        console.log("pressed " + keyEvt + " at " + time_hms_start);
+    }else{
+        console.log("video NOT playing");
+    }
+}
+
+function sliderOnKeyup(keyEvt) {
+    var time_sec_end = video_player.currentTime;
+    var time_hms_end = toHMS(time_sec_end);
+    if(video_player.readyState != 4){
+        console.log("video NOT loaded");
+    }
+    else if(checkVideo()) {
+        in_data.time_sec_end = time_sec_end;
+        in_data.time_hms_end = time_hms_end;
         data.push(in_data);
         dt.load([in_data], true, true);
-        showFace(keyEvt);
-        console.log("pressed " + keyEvt + " at " + time_hms);
+        unshowFace(keyEvt);
+        in_data = null;
+        console.log("released " + keyEvt + " at " + time_hms_end);
     }else{
         console.log("video NOT playing");
     }
@@ -197,13 +241,15 @@ function sliderOnKeypress(keyEvt) {
 function downloadData() {
     let csvContent = "data:text/csv;charset=utf-8,";
     csvContent += getGlobalAffectInput();
-    csvContent += "id,time_sec,times_hms,value\n";
+    csvContent += "id,time_sec_start,time_hms_start,time_sec_end,time_hms_end,value\n";
     for(var key in data) {
         var id = data[key].id;
-        var t_sec = data[key].time_sec;
-        var t_hms = data[key].time_hms;
+        var t_sec_start = data[key].time_sec_start;
+        var t_hms_start = data[key].time_hms_start;
+        var t_sec_end = data[key].time_sec_end;
+        var t_hms_end = data[key].time_hms_end;
         var val = data[key].value;
-        csvContent += id+","+t_sec+","+t_hms+","+val+"\n";
+        csvContent += id+","+t_sec_start+","+t_hms_start+","+t_sec_end+","+t_hms_end+","+val+"\n";
     }
     var encodedUri = encodeURI(csvContent);
     var link = document.createElement("a");
@@ -214,23 +260,50 @@ function downloadData() {
     link.click();
 }
 
-document.onkeydown = checkKey;
+document.onkeydown = checkKeyDown;
+document.onkeyup = checkKeyUp;
 
-function checkKey(e) {
+function checkKeyDown(e) {
+    if(keyHeld){
+        return
+    }
+    else{
+        keyHeld = true;
+    }
 
     e = e || window.event;
 
     if (e.keyCode == '38') {
         // up arrow
-        sliderOnKeypress(1);
+        sliderOnKeydown(1);
     }
     else if (e.keyCode == '40') {
         // down arrow
-        sliderOnKeypress(-1);
+        sliderOnKeydown(-1);
     }
-    else if (e.keyCode == '39') {
-        // right arrow
-        sliderOnKeypress(0);
+    // else if (e.keyCode == '39') {
+    //     // right arrow
+    //     sliderOnKeydown(0);
+    // }
+
+}
+
+function checkKeyUp(e) {
+    keyHeld = false;
+
+    e = e || window.event;
+
+    if (e.keyCode == '38') {
+        // up arrow
+        sliderOnKeyup(1);
     }
+    else if (e.keyCode == '40') {
+        // down arrow
+        sliderOnKeyup(-1);
+    }
+    // else if (e.keyCode == '39') {
+    //     // right arrow
+    //     sliderOnKeyup(0);
+    // }
 
 }
