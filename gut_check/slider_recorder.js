@@ -6,6 +6,7 @@ Object.defineProperty(HTMLMediaElement.prototype, 'playing', {
 
 var data = [];
 var keyHeld = false;
+var beepDelay = 0;
 
 $("#data-table").on('click', '.btnDelete', function () {
     var currentRow = $(this).closest("tr");
@@ -177,16 +178,16 @@ function sleep(ms) {
 }
 
 var negativeButton = document.getElementById("negativeButton");
-// var neutralButton = document.getElementById("neutralButton");
+var neutralButton = document.getElementById("neutralButton");
 var positiveButton = document.getElementById("positiveButton");
 
 async function showFace(val) {
     if(val == -1){
         negativeButton.classList.add("selected");
     }
-    // else if(val == 0){
-    //     neutralButton.classList.add("selected");
-    // }
+    else if(val == 0){
+        neutralButton.classList.add("selected");
+    }
     else if(val == 1){
         positiveButton.classList.add("selected");
     }
@@ -196,9 +197,9 @@ async function unshowFace(val) {
     if(val == -1){
         negativeButton.classList.remove("selected");
     }
-    // else if(val == 0){
-    //     neutralButton.classList.remove("selected");
-    // }
+    else if(val == 0){
+        neutralButton.classList.remove("selected");
+    }
     else if(val == 1){
         positiveButton.classList.remove("selected");
     }
@@ -281,10 +282,10 @@ function checkKeyDown(e) {
         // down arrow
         sliderOnKeydown(-1);
     }
-    // else if (e.keyCode == '39') {
-    //     // right arrow
-    //     sliderOnKeydown(0);
-    // }
+    else if (e.keyCode == '39') {
+        // right arrow
+        sliderOnKeydown(0);
+    }
 
 }
 
@@ -301,9 +302,50 @@ function checkKeyUp(e) {
         // down arrow
         sliderOnKeyup(-1);
     }
-    // else if (e.keyCode == '39') {
-    //     // right arrow
-    //     sliderOnKeyup(0);
-    // }
+    else if (e.keyCode == '39') {
+        // right arrow
+        sliderOnKeyup(0);
+    }
 
 }
+
+a=new AudioContext() // browsers limit the number of concurrent audio contexts, so you better re-use'em
+
+function beep(vol, freq, duration){
+  v=a.createOscillator()
+  u=a.createGain()
+  v.connect(u)
+  v.frequency.value=freq
+  v.type="square"
+  u.connect(a.destination)
+  u.gain.value=vol*0.01
+  v.start(a.currentTime)
+  v.stop(a.currentTime+duration*0.001)
+}
+
+function setBeep(){
+    var beepTime = document.getElementById("beepTime");
+    if (beepTime.value != ""){
+        beepDelay = beepTime.value
+    }
+    else{
+        beepDelay = 0
+    }
+}
+
+var $video = $('#player');
+var beeped = false;
+$video.on('timeupdate', function(event){
+    if (beepDelay != 0){
+        console.log(video_player.currentTime)
+        if(Math.round(video_player.currentTime) % beepDelay == 0){
+            if(!beeped){
+                beep(1, 280, 100);
+                beeped = true;
+            }
+        }
+        else{
+            beeped = false;
+        }
+    }
+});
