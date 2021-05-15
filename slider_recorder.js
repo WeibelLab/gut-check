@@ -265,6 +265,7 @@ document.onkeydown = checkKeyDown;
 document.onkeyup = checkKeyUp;
 
 function checkKeyDown(e) {
+    e.preventDefault();
     if(keyHeld){
         return
     }
@@ -290,6 +291,7 @@ function checkKeyDown(e) {
 }
 
 function checkKeyUp(e) {
+    e.preventDefault();
     keyHeld = false;
 
     e = e || window.event;
